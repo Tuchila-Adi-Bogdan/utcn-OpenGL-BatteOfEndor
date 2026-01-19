@@ -78,18 +78,43 @@ Aplicația permite:
 
 ## 4. Detalii de implementare
 
-### 4.1 Funcții și algoritmi
-Funcționalitatea de bază se bazează pe bucla de randare (renderScene) și procesarea input-ului (processMovement).
-- Algoritmul de mișcare a navelor : Pentru navele mici, s-a implementat un algoritm bazat pe Mașini de Stări Finite (FSM - Finite State Machine). Fiecare navă are o stare curentă (APPROACHING, EVASIVE_TURN, EVASIVE_RUN, STABILIZE, RETURNING, RESET_TURN).
-  - La fiecare cadru, în funcție de stare, se actualizează poziția și rotația (Euler Angles).
-  - Tranzițiile între stări se fac pe bază de cronometru (stateTimer) sau poziție (atingerea unei linii imaginare).
-- Algoritmul de tragere (Targeting) : Pentru sistemul de lasere, s-a folosit un algoritm de selecție aleatorie a țintelor și interpolare liniară pentru mișcarea proiectilului:
-  - CurrentPos = StartPos + (TargetPos - StartPos) * progress.
-  - Când progress atinge 1.0, se consideră impact și laserul devine inactiv.
 #### 4.1.1 Soluții posibile
--	Animație Keyframe (Hardcoded): Definirea manuală a fiecărei poziții la fiecare secundă.
-- Motor Fizic: Implementarea vitezei, accelerației și a coliziunilor reale.
--	Procedural / State Machine: Definirea regulilor de comportament.
+1. Algoritmul de mișcare a navelor
+  - Pentru navele mici, s-a implementat un algoritm bazat pe Mașini de Stări Finite (FSM - Finite State Machine). 
+	  - Fiecare navă are o stare curentă (APPROACHING, EVASIVE_TURN, EVASIVE_RUN, STABILIZE, RETURNING, RESET_TURN).
+	  - Tranzițiile între stări se fac pe bază de cronometru (stateTimer) sau poziție (atingerea unei linii imaginare).
+      <!-- <img src="docs/StateDiagramPG.png" alt="StateDiagram"> -->
+	  - La fiecare cadru, în funcție de stare, se actualizează poziția și rotația (Euler Angles).
+		```
+		// Random Jitter
+		float rPitch = ((rand() % 1000) / 1000.0f - 0.5f) * 2.0f;
+		float rYaw = ((rand() % 1000) / 1000.0f - 0.5f) * 2.0f;
+		float rRoll = ((rand() % 1000) / 1000.0f - 0.5f) * 2.0f;
+		ship.rotation.x += rPitch * deltaTime * 2.5f;
+		ship.rotation.y += rYaw * deltaTime * 2.5f;
+		ship.rotation.z += rRoll * deltaTime * 4.0f;
+		```
+		
+		```
+		// Move forward based on nose (of the ship) direction 
+		glm::vec3 forward;
+		forward.x = sin(ship.rotation.y) * cos(ship.rotation.x);
+		forward.y = -sin(ship.rotation.x);
+		forward.z = cos(ship.rotation.y) * cos(ship.rotation.x);
+		forward = glm::normalize(forward);
+		ship.position += forward * (ship.speed * 60.0f * deltaTime);
+		```
+      
+      
+  - Pentru navele mari așa are loc mișcarea:
+  ```
+  ImperialFleetPosition.z += capitalShipSpeed;
+  ```
+	- ImperialFleetPosition se actualizează când e ținut apăsat space bar.
+  ```
+  isdModel = glm::translate(isdModel, ImperialFleetPosition + isdOffsets[i]);
+  ```
+	- Adaugăm idsOffsets ca să își păstreze formația
 
 #### 4.1.2 Motivarea abordării alese
 S-a ales abordarea Procedurală cu State Machine 
