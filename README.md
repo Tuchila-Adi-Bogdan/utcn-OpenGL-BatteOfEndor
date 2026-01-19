@@ -99,7 +99,7 @@ Motiv: Mașina de stări permite un comportament "organic" al flotei (navele par
 Aplicația folosește OpenGL 3.3 Core Profile.
 -	Pipeline de randare: Vertex Shader (transformă coordonatele din spațiul local -> lume -> vizualizare -> clip) și Fragment Shader (calculează culoarea finală).
 -	Iluminare: Modelul Blinn-Phong.
-    - Lumină direcțională pentru Soare.
+    - Lumină direcțională (de la steaua cea mai apropriata).
     - Lumini punctiforme (Point Lights) dinamice atașate de vârful laserelor și de centrul exploziilor. Acestea apar și dispar în funcție de logica simulării.
 - Texturare: Modelele 3D au coordonate UV și texturi difuze mapate.
 
@@ -169,10 +169,9 @@ Pentru a crește realismul aplicației, se pot implementa:
 
 ## 7. Referințe:
 1.	LearnOpenGL: https://learnopengl.com/ - Resursă principală pentru teorie (iluminare, transformări).
-2.	GLM Documentation: https://glm.g-truc.net/ - Matematica vectorilor și matricelor.
+2.	Laboratoare PG - Matematica vectorilor și matricelor.
 3.	Star Wars 3D Models: sketchfab (https://sketchfab.com) - Sursa modelelor (Death Star, X-Wing, ISD).
-4.	GLFW & GLEW Documentation: Pentru gestionarea ferestrei și a extensiilor OpenGL.
-
+5.  Skybox: http://alexcpeterson.com/spacescape/ - un program excelent pentru skybox-uri spatiale.
 Project Link: [https://github.com/Tuchila-Adi-Bogdan/utcn-Investor_Centre](https://github.com/Tuchila-Adi-Bogdan/utcn-Investor_Centre)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
