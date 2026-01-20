@@ -68,6 +68,7 @@ Aplicația permite:
  -	Controlul turelelor de pe Star Destroyers (tastele 1-7) pentru a ataca ținte aleatorii din flota inamică.
  -	"Volley Fire" din partea rebelilor (tasta P).
  -	Manipularea timpului: Acțiunile se desfășoară doar cât timp tasta SPACE este apăsată, permițând vizualizarea detaliată a traiectoriilor laserelor și a detaliilor.
+ -	Ceață
 
 # 4. Detalii de implementare
 ## 4.1. Funcții și Algoritmi
@@ -307,6 +308,7 @@ Controale:
 - Tastele 1 - 7 (În timp ce ții SPACE): Fiecare tastă comandă un Star Destroyer specific să tragă un laser verde spre o navă rebelă aleatorie.
 -	Tasta P (În timp ce ții SPACE): Comandă "Rebel Volley": Toate navele mici rebele trag simultan lasere roșii către distrugătoarele imperiale.
 -	Tasta K: Resetarea completă a scenei (poziții nave, lasere, explozii).
+-	Tasta G: Toggle Ceață
 
 # 6. Concluzii și dezvoltări ulterioare
 Concluzii: Proiectul a reușit simularea unei scene complexe de luptă spațială, integrând cu succes concepte de transformări matriceale, iluminare dinamică (lasere care emit lumină) și inteligență artificială rudimentară pentru mișcarea flotelor. Utilizarea structurilor de date dinamice (std::vector) a permis scalarea numărului de nave fără a modifica logica de bază.
