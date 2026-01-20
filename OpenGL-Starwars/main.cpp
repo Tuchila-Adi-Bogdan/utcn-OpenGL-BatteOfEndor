@@ -114,6 +114,25 @@ glm::vec3 isdOffsets[] = {
     glm::vec3(-240.0f, 0.0f, 240.0f),     // Key 6
     glm::vec3(240.0f, 0.0f, 240.0f)       // Key 7
 };
+
+glm::vec3 cruisersOffsets[] = {
+        glm::vec3(-250.0f,  0.0f,  0.0f), // Left
+        glm::vec3(0.0f,  0.0f,  0.0f),    // Center
+        glm::vec3(250.0f,  0.0f,  0.0f)   // Right
+};
+
+// Death Star Logic State
+int deathStarStage = 0;
+// 0 = Ready
+// 1 = Firing at Center
+// 2 = Exploding Center
+// 3 = Firing at Right
+// 4 = Exploding Right
+// 5 = Finished
+
+bool isCruiserDestroyed[3] = { false, false, false };
+float explosionTimers[3] = { 0.0f, 0.0f, 0.0f };
+
 int isdKeys[] = { GLFW_KEY_1, GLFW_KEY_2, GLFW_KEY_3, GLFW_KEY_4, GLFW_KEY_5, GLFW_KEY_6, GLFW_KEY_7 };
 
 struct RebelLaserShot {
@@ -529,18 +548,38 @@ void processMovement() {
         ImperialFleetPosition.z += capitalShipSpeed;
         cruiserFleetPosition.z -= capitalShipSpeed;
 
-        if (!hasHit) {
-            // Death Star laser
-            beamProgress += 0.3f * deltaTime;
+        if (deathStarStage == 0) deathStarStage = 1;
+
+        // STAGE 1: Fire at Center Cruiser (Index 1)
+        if (deathStarStage == 1) {
+            beamProgress += 0.3f * deltaTime; // Beam Speed
             if (beamProgress >= 1.0f) {
-                beamProgress = 1.0f;
-                hasHit = true;
+                beamProgress = 0.0f;          // Reset beam for next shot
+                isCruiserDestroyed[1] = true; // Destroy Center
+                deathStarStage = 2;           // Move to Explosion
             }
         }
-        else {
-            // MC Cruiser explosion
-            if (explosionProgress < 1.0f) {
-                explosionProgress += deltaTime * explosionSpeed;
+        // STAGE 2: Explode Center
+        else if (deathStarStage == 2) {
+            explosionTimers[1] += deltaTime * explosionSpeed;
+            if (explosionTimers[1] >= 1.0f) {
+                deathStarStage = 3; // Finished exploding, target next ship
+            }
+        }
+        // STAGE 3: Fire at Right Cruiser (Index 2)
+        else if (deathStarStage == 3) {
+            beamProgress += 0.3f * deltaTime;
+            if (beamProgress >= 1.0f) {
+                beamProgress = 0.0f;
+                isCruiserDestroyed[2] = true; // Destroy Right
+                deathStarStage = 4;
+            }
+        }
+        // STAGE 4: Explode Right
+        else if (deathStarStage == 4) {
+            explosionTimers[2] += deltaTime * explosionSpeed;
+            if (explosionTimers[2] >= 1.0f) {
+                deathStarStage = 5; // Sequence Complete
             }
         }
         // ISD Fire
@@ -596,7 +635,6 @@ void processMovement() {
 
     // RESET logic
     if (pressedKeys[GLFW_KEY_K]) {
-        beamProgress = 0.0f;
         hasHit = false;
         explosionProgress = 0.0f; // Reset explosion
         ImperialFleetPosition = ImperialFleetPositionDefault;
@@ -610,6 +648,12 @@ void processMovement() {
             isdLasers[i].progress = 0.0f;
             isdLasers[i].targetShip = nullptr;
         }
+        deathStarStage = 0;
+        beamProgress = 0.0f;
+        for (int i = 0; i < 3; i++) {
+            isCruiserDestroyed[i] = false;
+            explosionTimers[i] = 0.0f;
+        }
     }
 
     // Shader updates
@@ -619,6 +663,7 @@ void processMovement() {
     normalMatrix = glm::mat3(glm::inverseTranspose(view * model));
     glUniformMatrix3fv(normalMatrixLoc, 1, GL_FALSE, glm::value_ptr(normalMatrix));
 }
+
 
 void renderRebelLasers(gps::Shader shader) {
     shader.useShaderProgram();
@@ -709,58 +754,47 @@ void renderISDLaser(gps::Shader shader, LaserShot& laser) {
 }
 
 void renderSuperlaser(gps::Shader shader) {
+    // Only draw beam during Firing Stages (1 and 3)
+    if (deathStarStage != 1 && deathStarStage != 3) return;
+
     shader.useShaderProgram();
 
-    // 1. Define Trajectory
-    glm::vec3 start = dsDishPos;
-    glm::vec3 target = cruiserFleetPosition;
+    // 1. Determine Target based on Stage
+    int targetIndex = (deathStarStage == 1) ? 1 : 2; // 1=Center, 2=Right
 
-    // 2. Calculate Current Position (The Bullet's location)
+    glm::vec3 start = dsDishPos;
+    glm::vec3 target = cruiserFleetPosition + cruisersOffsets[targetIndex];
+
+    // 2. Calculate Current Position
     glm::vec3 currentPos = start + (target - start) * beamProgress;
 
-    // 3. LIGHTING (Move the light with the laser beam)
+    // 3. LIGHTING
     glUniform3fv(glGetUniformLocation(shader.shaderProgram, "pointLightPos"), 1, glm::value_ptr(currentPos));
-
-    // Green Light
     glm::vec3 greenColor = glm::vec3(0.0f, 5.0f, 0.0f);
-
-    // Turn off light if we haven't fired or if we hit the target
-    if (beamProgress <= 0.01f || beamProgress >= 1.0f) {
-        greenColor = glm::vec3(0.0f);
-    }
     glUniform3fv(glGetUniformLocation(shader.shaderProgram, "pointLightColor"), 1, glm::value_ptr(greenColor));
 
-    // 4. Draw the Projectile
-    if (beamProgress > 0.01f && beamProgress < 1.0f) {
+    // 4. Draw Projectile
+    glm::mat4 modelBeam = glm::mat4(1.0f);
+    modelBeam = glm::translate(modelBeam, currentPos);
 
-        glm::mat4 modelBeam = glm::mat4(1.0f);
+    glm::vec3 direction = glm::normalize(target - start);
 
-        // A. Move to the Current Position (Translation)
-        modelBeam = glm::translate(modelBeam, currentPos);
-
-        // B. Rotate to face the Target - calculate the direction from Start to Target
-        glm::vec3 direction = glm::normalize(target - start);
-
-        // Create rotation matrix looking at target
-        // Use 'start' and 'target' for the LookAt to get the angle, then remove the translation part so it's just a rotation.
-        glm::mat4 rotation = glm::inverse(glm::lookAt(start, target, glm::vec3(0, 1, 0)));
-        rotation[3] = glm::vec4(0, 0, 0, 1); // Reset position, keep rotation
+    // Orientation logic
+    if (glm::length(target - start) > 0.1f) {
+        glm::mat4 rotation = glm::inverse(glm::lookAt(currentPos, start, glm::vec3(0, 1, 0)));
+        rotation[3] = glm::vec4(0, 0, 0, 1);
         modelBeam = modelBeam * rotation;
-
-        // C. Align Cylinder 
-        modelBeam = glm::rotate(modelBeam, glm::radians(-90.0f), glm::vec3(1, 0, 0));
-
-        // D. Scale
-        modelBeam = glm::scale(modelBeam, glm::vec3(5.0f, 10.0f, 5.0f));
-
-        // Send Uniforms
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelBeam));
-        glm::mat3 normalMatrixBeam = glm::mat3(glm::inverseTranspose(view * modelBeam));
-        glUniformMatrix3fv(normalMatrixLoc, 1, GL_FALSE, glm::value_ptr(normalMatrixBeam));
-        glUniform1f(glGetUniformLocation(shader.shaderProgram, "tilingFactor"), 1.0f);
-
-        laserBeam.Draw(shader);
     }
+
+    modelBeam = glm::rotate(modelBeam, glm::radians(-90.0f), glm::vec3(1, 0, 0));
+    modelBeam = glm::scale(modelBeam, glm::vec3(5.0f, 10.0f, 5.0f));
+
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelBeam));
+    glm::mat3 normalMatrixBeam = glm::mat3(glm::inverseTranspose(view * modelBeam));
+    glUniformMatrix3fv(normalMatrixLoc, 1, GL_FALSE, glm::value_ptr(normalMatrixBeam));
+    glUniform1f(glGetUniformLocation(shader.shaderProgram, "tilingFactor"), 1.0f);
+
+    laserBeam.Draw(shader);
 }
 
 
@@ -909,15 +943,9 @@ void renderAWings(gps::Shader shader) {
 void renderCruisers(gps::Shader shader) {
     shader.useShaderProgram();
 
-    glm::vec3 cruisersOffsets[] = {
-        glm::vec3(-250.0f,  0.0f,  0.0f), // Left
-        glm::vec3(0.0f,  0.0f,  0.0f),    // Center
-        glm::vec3(250.0f,  0.0f,  0.0f)   // Right
-    };
-
     for (int i = 0; i < 3; i++) {
-        // Hide Center Cruiser on Hit
-        if (i == 1 && hasHit) continue;
+
+        if (isCruiserDestroyed[i]) continue;
 
         glm::mat4 modelM = glm::mat4(1.0f);
         modelM = glm::translate(modelM, cruiserFleetPosition + cruisersOffsets[i]);
@@ -972,33 +1000,33 @@ void renderDeathStar(gps::Shader shader) {
 }
 
 void renderExplosion(gps::Shader shader) {
-    // 1. Only draw if it hit AND explosion isn't finished yet
-    if (!hasHit || explosionProgress >= 1.0f) return;
-
     shader.useShaderProgram();
 
-    glm::mat4 modelExp = glm::mat4(1.0f);
+    // Check all 3 cruisers for active explosions
+    for (int i = 0; i < 3; i++) {
+        // Draw only if timer is > 0 and < 1
+        if (explosionTimers[i] <= 0.001f || explosionTimers[i] >= 1.0f) continue;
 
-    // 2. Move to Center Cruiser Position
-    modelExp = glm::translate(modelExp, cruiserFleetPosition);
+        glm::mat4 modelExp = glm::mat4(1.0f);
 
-    // 3. Scale Up 
-    float currentScale = explosionProgress * 100.0f;
-    modelExp = glm::scale(modelExp, glm::vec3(currentScale));
+        // Move to the specific cruiser's position
+        modelExp = glm::translate(modelExp, cruiserFleetPosition + cruisersOffsets[i]);
 
-    // 4. Send Uniforms
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelExp));
-    glm::mat3 normalMatrixExp = glm::mat3(glm::inverseTranspose(view * modelExp));
-    glUniformMatrix3fv(normalMatrixLoc, 1, GL_FALSE, glm::value_ptr(normalMatrixExp));
+        // Scale
+        float currentScale = explosionTimers[i] * 100.0f;
+        modelExp = glm::scale(modelExp, glm::vec3(currentScale));
 
-    // 5. Light Effect (Yellow/Orange Flash)
-    // Position light at explosion center
-    glUniform3fv(glGetUniformLocation(shader.shaderProgram, "pointLightPos"), 1, glm::value_ptr(cruiserFleetPosition));
-    // Yellow color
-    glm::vec3 yellowColor = glm::vec3(5.0f, 3.0f, 0.0f);
-    glUniform3fv(glGetUniformLocation(shader.shaderProgram, "pointLightColor"), 1, glm::value_ptr(yellowColor));
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelExp));
+        glm::mat3 normalMatrixExp = glm::mat3(glm::inverseTranspose(view * modelExp));
+        glUniformMatrix3fv(normalMatrixLoc, 1, GL_FALSE, glm::value_ptr(normalMatrixExp));
 
-    explosion.Draw(shader);
+        // Light Effect
+        glUniform3fv(glGetUniformLocation(shader.shaderProgram, "pointLightPos"), 1, glm::value_ptr(cruiserFleetPosition + cruisersOffsets[i]));
+        glm::vec3 yellowColor = glm::vec3(5.0f, 3.0f, 0.0f);
+        glUniform3fv(glGetUniformLocation(shader.shaderProgram, "pointLightColor"), 1, glm::value_ptr(yellowColor));
+
+        explosion.Draw(shader);
+    }
 }
 
 void renderScene() {
