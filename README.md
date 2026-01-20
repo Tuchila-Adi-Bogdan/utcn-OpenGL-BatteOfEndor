@@ -325,7 +325,5 @@ Pentru a crește realismul aplicației, se pot implementa:
 2.	Laboratoare PG - Matematica vectorilor și matricelor.
 3.	Star Wars 3D Models: sketchfab (https://sketchfab.com) - Sursa modelelor (Death Star, X-Wing, ISD).
 5.  Skybox: http://alexcpeterson.com/spacescape/ - un program excelent pentru skybox-uri spatiale.
-</br>
-Project Link: [https://github.com/Tuchila-Adi-Bogdan/utcn-Investor_Centre](https://github.com/Tuchila-Adi-Bogdan/utcn-Investor_Centre)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
