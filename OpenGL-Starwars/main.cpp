@@ -125,6 +125,10 @@ struct RebelLaserShot {
 
 std::vector<RebelLaserShot> rebelLasers; // Vector to store the volley
 
+//Fog effect
+int fogInit = 0;
+GLint fogInitLoc;
+
 // Global Fleets
 std::vector<Ship> xWings;
 std::vector<Ship> aWings;
@@ -223,6 +227,11 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
             glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
             break;
         }
+    }
+    if (key == GLFW_KEY_G && action == GLFW_PRESS) {
+        fogInit = !fogInit; 
+        myBasicShader.useShaderProgram();
+        glUniform1i(fogInitLoc, fogInit); 
     }
 }
 
@@ -625,12 +634,12 @@ void renderRebelLasers(gps::Shader shader) {
 
         glm::vec3 currentPos = start + (target - start) * laser.progress;
 
-        // 1. RED LIGHT
+        // RED LIGHT
         glUniform3fv(glGetUniformLocation(shader.shaderProgram, "pointLightPos"), 1, glm::value_ptr(currentPos));
         glm::vec3 redColor = glm::vec3(5.0f, 0.0f, 0.0f); // Bright Red
         glUniform3fv(glGetUniformLocation(shader.shaderProgram, "pointLightColor"), 1, glm::value_ptr(redColor));
 
-        // 2. RENDER BEAM
+        // RENDER BEAM
         glm::mat4 modelBeam = glm::mat4(1.0f);
         modelBeam = glm::translate(modelBeam, currentPos);
 
@@ -748,7 +757,6 @@ void renderSuperlaser(gps::Shader shader) {
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelBeam));
         glm::mat3 normalMatrixBeam = glm::mat3(glm::inverseTranspose(view * modelBeam));
         glUniformMatrix3fv(normalMatrixLoc, 1, GL_FALSE, glm::value_ptr(normalMatrixBeam));
-
         glUniform1f(glGetUniformLocation(shader.shaderProgram, "tilingFactor"), 1.0f);
 
         laserBeam.Draw(shader);
@@ -780,7 +788,7 @@ void initSkybox()
 }
 
 void initOpenGLState() {
-    glClearColor(0.7f, 0.7f, 0.7f, 1.0f);
+    glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
     glViewport(0, 0, myWindow.getWindowDimensions().width, myWindow.getWindowDimensions().height);
     glEnable(GL_FRAMEBUFFER_SRGB);
     glEnable(GL_DEPTH_TEST); // enable depth-testing
@@ -851,6 +859,9 @@ void initUniforms() {
     lightColorLoc = glGetUniformLocation(myBasicShader.shaderProgram, "lightColor");
     // send light color to shader
     glUniform3fv(lightColorLoc, 1, glm::value_ptr(lightColor));
+
+    fogInitLoc = glGetUniformLocation(myBasicShader.shaderProgram, "fogInit");
+    glUniform1i(fogInitLoc, fogInit);
 }
 
 void renderXWings(gps::Shader shader) {

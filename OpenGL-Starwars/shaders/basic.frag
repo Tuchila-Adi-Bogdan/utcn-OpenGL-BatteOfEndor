@@ -5,26 +5,28 @@ in vec3 fNormal;
 in vec2 fTexCoords;
 
 out vec4 fColor;
+in vec4 fPosEye;
 
 // MATRICES
 uniform mat4 model;
 uniform mat4 view;
 uniform mat3 normalMatrix;
+uniform int fogInit;
 
 // LIGHTING
 // Directional Light (From space)
 uniform vec3 lightDir;
 uniform vec3 lightColor;
 
-// Point Light (Superlaser)
+// Point Light (lasers)
 uniform vec3 pointLightPos;   // Position of the beam tip
-uniform vec3 pointLightColor; // Color (Green)
+uniform vec3 pointLightColor; // Color 
 
 // Textures
 uniform sampler2D diffuseTexture;
 uniform sampler2D specularTexture;
 
-// Global Variables (To hold summed light)
+// Global Variables
 vec3 ambientTotal;
 vec3 diffuseTotal;
 vec3 specularTotal;
@@ -33,6 +35,16 @@ vec3 specularTotal;
 float ambientStrength = 0.2f;
 float specularStrength = 0.5f;
 float shininess = 32.0f;
+
+float computeFog()
+{
+    float fogDensity = 0.05f;
+    float fragmentDistance = length(fPosEye);
+    
+    float fogFactor = exp(-pow(fragmentDistance * fogDensity, 2));
+
+    return clamp(fogFactor, 0.0f, 1.0f);
+}
 
 void computeDirLight(vec4 fPosEye, vec3 normalEye, vec3 viewDir, vec3 texDiffuse, vec3 texSpecular)
 {
@@ -65,11 +77,11 @@ void computePointLight(vec4 fPosEye, vec3 normalEye, vec3 viewDir, vec3 texDiffu
     float quadratic = 0.000075f;
     float attenuation = 1.0 / (constant + linear * distance + quadratic * (distance * distance));
 
-    // 3. Diffuse (Green)
+    // 3. Diffuse
     float diff = max(dot(normalEye, lightDirP), 0.0f);
     diffuseTotal += diff * pointLightColor * attenuation * texDiffuse;
 
-    // 4. Specular (Green Reflection)
+    // 4. Specular 
     vec3 reflectDir = reflect(-lightDirP, normalEye);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0f), shininess);
     specularTotal += specularStrength * spec * pointLightColor * attenuation * texSpecular;
@@ -107,5 +119,14 @@ void main()
     // combine everything
     vec3 finalColor = min(ambientTotal + diffuseTotal + specularTotal, 1.0f);
 
-    fColor = vec4(finalColor, 1.0f);
+    if (fogInit == 1)
+    {
+        float fogFactor = computeFog();
+        vec4 fogColor = vec4(0.5f, 0.5f, 0.5f, 1.0f);
+        fColor = mix(fogColor, vec4(finalColor, 1.0f), fogFactor);
+    }
+    else 
+    {
+        fColor = vec4(finalColor, 1.0f);
+    }
 }
