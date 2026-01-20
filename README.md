@@ -57,17 +57,17 @@ Scena este plasată în spațiu adânc (Deep Space), randat prin intermediul unu
 4. Elemente dinamice:
    1. Lasere verzi (Death Star și ISD).
    2. Lasere roșii (Nave rebele).
-   3.	Explozii animate.
+   3. Explozii animate.
 
 ## 3.2 Funcționalități
 Aplicația permite:
 -	Navigare liberă: Utilizatorul poate explora scena folosind o cameră de tip "Fly Camera".
 -	Animație procedurală: Navele mici (X-Wings, A-Wings) nu stau statice; ele urmează o mașină de stări (State Machine) pentru a simula un atac: apropiere, viraj evaziv, fugă și regrupare.
 -	Sistem de luptă interactiv:
--	Declanșarea "Superlaser-ului" Death Star asupra crucișătoarelor Mon Calamari.
--	Controlul turelelor de pe Star Destroyers (tastele 1-7) pentru a ataca ținte aleatorii din flota inamică.
--	"Volley Fire" din partea rebelilor (tasta P).
--	Manipularea timpului: Acțiunile se desfășoară doar cât timp tasta SPACE este apăsată, permițând vizualizarea detaliată a traiectoriilor laserelor și a detaliilor.
+ -	Declanșarea "Superlaser-ului" Death Star asupra crucișătoarelor Mon Calamari.
+ -	Controlul turelelor de pe Star Destroyers (tastele 1-7) pentru a ataca ținte aleatorii din flota inamică.
+ -	"Volley Fire" din partea rebelilor (tasta P).
+ -	Manipularea timpului: Acțiunile se desfășoară doar cât timp tasta SPACE este apăsată, permițând vizualizarea detaliată a traiectoriilor laserelor și a detaliilor.
 
 # 4. Detalii de implementare
 ## 4.1. Funcții și Algoritmi
@@ -319,14 +319,10 @@ Pentru a crește realismul aplicației, se pot implementa:
 4.	Audio: Adăugarea efectelor sonore spațiale 3D folosind o bibliotecă precum OpenAL.
 
 # 7. Referințe:
-1.	LearnOpenGL: https://learnopengl.com/ - Resursă principală pentru teorie (iluminare, transformări).
+1.	LearnOpenGL: https://learnopengl.com/ - Resursă principală pentru teorie (iluminare, transformări, cameră).
 2.	Laboratoare PG - Matematica vectorilor și matricelor.
 3.	Star Wars 3D Models: sketchfab (https://sketchfab.com) - Sursa modelelor (Death Star, X-Wing, ISD).
 5.  Skybox: http://alexcpeterson.com/spacescape/ - un program excelent pentru skybox-uri spatiale.
 Project Link: [https://github.com/Tuchila-Adi-Bogdan/utcn-Investor_Centre](https://github.com/Tuchila-Adi-Bogdan/utcn-Investor_Centre)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- MARKDOWN LINKS & IMAGES -->
-
-[product-screenshot]: images/screenshot.png
