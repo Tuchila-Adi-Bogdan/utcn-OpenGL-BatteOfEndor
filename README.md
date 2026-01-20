@@ -21,7 +21,7 @@
   </p>
 </div>
 
-## 1. Cuprins
+# 1. Cuprins
 
 1. [Cuprins](#1-cuprins)
 2. [Prezentarea temei](#2-prezentarea-temei)
@@ -40,17 +40,13 @@
 7. [Referințe](#7-referințe)
    
 <!-- ABOUT THE PROJECT -->
-## 2. Prezentarea temei
+# 2. Prezentarea temei
 
 Proiectul constă în realizarea unei simulări 3D interactive a unei bătălii spațiale, inspirată din universul "Star Wars". Scopul principal este demonstrarea conceptelor fundamentale de grafică computerizată utilizând biblioteca OpenGL și limbajul C++. Aplicația pune accent pe manipularea obiectelor 3D în timp real, iluminare dinamică, transformări geometrice complexe și animație procedurală. Scena surprinde confruntarea dintre Flota Imperială (incluzând Death Star II și Imperial Star Destroyers) și Alianța Rebelă (nave de tip X-Wing, A-Wing și Mon Calamari Cruisers), oferind utilizatorului control asupra camerei și asupra declanșării evenimentelor de luptă.
 
-## 3. Scenariul
-### Descrierea scenei și a obiectelor
-
-#### Elemente Principale: 
+# 3. Scenariul
+## 3.1 Descrierea scenei și a obiectelor 
 Scena este plasată în spațiu adânc (Deep Space), randat prin intermediul unui Skybox cubic texturat.
-#### 3.1 Descrierea scenei și a obiectelor 
-
 1. Sursă de lumină globală: Există o sursă de lumină in spatele Death Star II.
 2. The empire:
    1. Death Star II: Obiect masiv, parțial construit, poziționat în fundal.
@@ -63,7 +59,7 @@ Scena este plasată în spațiu adânc (Deep Space), randat prin intermediul unu
    2. Lasere roșii (Nave rebele).
    3.	Explozii animate.
 
-#### 3.2 Funcționalități
+## 3.2 Funcționalități
 Aplicația permite:
 -	Navigare liberă: Utilizatorul poate explora scena folosind o cameră de tip "Fly Camera".
 -	Animație procedurală: Navele mici (X-Wings, A-Wings) nu stau statice; ele urmează o mașină de stări (State Machine) pentru a simula un atac: apropiere, viraj evaziv, fugă și regrupare.
@@ -73,10 +69,10 @@ Aplicația permite:
 -	"Volley Fire" din partea rebelilor (tasta P).
 -	Manipularea timpului: Acțiunile se desfășoară doar cât timp tasta SPACE este apăsată, permițând vizualizarea detaliată a traiectoriilor laserelor și a detaliilor.
 
-## 4. Detalii de implementare
+# 4. Detalii de implementare
 ## 4.1. Funcții și Algoritmi
 Ca și regulă, folosesc funcția processMovement() , pentru toată mișcarea. În această funcție verific dacă space bar este apăsat. Dacă da, se actualizează mai multe variabile care reprezintă poziția pentru mai multe obiecte din scenă. Odată ce s-a actualizat poziția, obiectele sunt translatate cu diferite viteze, așa are loc mișcarea.
-#### 4.1.1 Soluții posibile
+### 4.1.1 Soluții posibile
 Aici am prezentat pe scurt algoritmii mai interesanți din proiect.
 ### 1. Algoritmul de mișcare a navelor
 - Pentru navele mari, așa are loc mișcarea:
@@ -220,20 +216,20 @@ if (glm::length(target - start) > 0.1f) {
     modelBeam = modelBeam * rotation;
 }
 ```  
-#### 4.1.2 Motivarea abordării alese
+### 4.1.2 Motivarea abordării alese
  - Sistemul de mișcare este bazat pe FSM (Finite State Machine).
  	- Motiv: Această arhitectură oferă scalabilitate și modularitate. Permite gestionarea unui număr mare de entități simultan cu un cost computațional redus, generând un comportament organic care ar fi fost dificil și ineficient de implementat prin animație statică (keyframe).
  - Modelul laserelor este bazat pe Interpolare Liniară (LERP): Traiectoria proiectilelor este calculată folosind un factor de progres (0.0 - 1.0), actualizat în funcție de deltaTime
  	- Motiv: Această metodă maximizează eficiența. Elimină necesitatea unor calcule fizice complexe (precum integrarea numerică a accelerației) pentru obiecte care nu își schimbă traiectoria, garantând în același timp precizia impactului și o sincronizare perfectă între logică și randare.
 
-### 4.2 Modelul grafic
+## 4.2 Modelul grafic
 Aplicația folosește OpenGL 3.3 Core Profile.
 -	Pipeline de randare: Vertex Shader (transformă coordonatele din spațiul local -> lume -> vizualizare -> clip) și Fragment Shader (calculează culoarea finală).
 -	Iluminare: Modelul Blinn-Phong.
     - Lumină direcțională (de la steaua cea mai apropriata).
     - Lumini punctiforme (Point Lights) dinamice atașate de vârful laserelor și de centrul exploziilor. Acestea apar și dispar în funcție de logica simulării.
 - Texturare: Modelele 3D au coordonate UV și texturi difuze mapate.
-## Fragment shader:
+### Fragment shader:
 În fragment shader calculez ambientTotal, diffuseTotal, specularTotal.
  - ambientTotal = ambientDir + ambientPoint
  - diffuseTotal = diffuseDir + diffusePoint
@@ -258,7 +254,7 @@ Aplicația folosește OpenGL 3.3 Core Profile.
 // Combinare finală
 vec3 finalColor = min(ambientTotal + diffuseTotal + specularTotal, 1.0f);
 ```
-### 4.3 Structuri de date
+## 4.3 Structuri de date
 Pentru gestionarea eficientă a obiectelor, s-au folosit structuri C++ și containere STL:
 - struct Ship: Stochează poziția (glm::vec3), rotația, viteza și starea curentă a fiecărei nave de luptă.
 ```cpp
@@ -290,7 +286,7 @@ struct RebelLaserShot {
 - std::vector<Ship>: Gestionarea dinamică a flotelor (XWings, AWings).
 - std::vector<RebelLaserShot>: Permite un număr variabil de proiectile simultane
 
-### 4.4 Ierarhia de clase
+## 4.4 Ierarhia de clase
 Deși logica jocului este procedurală (în main.cpp), s-au folosit clase wrapper pentru abstractizarea OpenGL:
 -	gps::Window: Inițializarea ferestrei GLFW și contextului OpenGL.
 -	gps::Camera: Gestionează matricea de vizualizare (View Matrix), mișcarea (WASD) și rotația din mouse (Pitch/Yaw).
@@ -298,7 +294,7 @@ Deși logica jocului este procedurală (în main.cpp), s-au folosit clase wrappe
 -	gps::Shader: Încărcarea, compilarea și link-area shaderelor GLSL.
 -	gps::SkyBox: Clasa dedicată randării cubului de fundal.
 
-## 5. Prezentarea interfeței grafice utilizator / Manual de utilizare
+# 5. Prezentarea interfeței grafice utilizator / Manual de utilizare
 
 Interfața este vizuală, controlul realizându-se prin tastatură și mouse. Nu există meniuri 2D suprapuse (HUD), imersiunea fiind prioritară.
 Controale:
@@ -312,17 +308,17 @@ Controale:
 -	Tasta P (În timp ce ții SPACE): Comandă "Rebel Volley": Toate navele mici rebele trag simultan lasere roșii către distrugătoarele imperiale.
 -	Tasta K: Resetarea completă a scenei (poziții nave, lasere, explozii).
 
-## 6. Concluzii și dezvoltări ulterioare
+# 6. Concluzii și dezvoltări ulterioare
 Concluzii: Proiectul a reușit simularea unei scene complexe de luptă spațială, integrând cu succes concepte de transformări matriceale, iluminare dinamică (lasere care emit lumină) și inteligență artificială rudimentară pentru mișcarea flotelor. Utilizarea structurilor de date dinamice (std::vector) a permis scalarea numărului de nave fără a modifica logica de bază.
 
-### Dezvoltări ulterioare:
+## Dezvoltări ulterioare:
 Pentru a crește realismul aplicației, se pot implementa:
 1.	Shadow Mapping: Implementarea umbrelor dinamice (navele să lase umbră una pe alta), folosind randarea în două treceri (Depth Map pass + Render pass).
 2.	Coliziuni Avansate: Înlocuirea verificării simple (progress >= 1.0) cu volume de coliziune (AABB sau sfere) pentru a permite distrugerea navelor la impact.
 3.	Sistem de Particule: Pentru a genera explozii volumetrice și urme ale motoarelor (engine trails).
 4.	Audio: Adăugarea efectelor sonore spațiale 3D folosind o bibliotecă precum OpenAL.
 
-## 7. Referințe:
+# 7. Referințe:
 1.	LearnOpenGL: https://learnopengl.com/ - Resursă principală pentru teorie (iluminare, transformări).
 2.	Laboratoare PG - Matematica vectorilor și matricelor.
 3.	Star Wars 3D Models: sketchfab (https://sketchfab.com) - Sursa modelelor (Death Star, X-Wing, ISD).
