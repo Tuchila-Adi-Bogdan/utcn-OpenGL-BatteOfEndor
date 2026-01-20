@@ -50,7 +50,7 @@ gps::Camera myCamera(
     glm::vec3(0.0f, 0.0f, -10.0f),
     glm::vec3(0.0f, 1.0f, 0.0f));
 
-GLfloat cameraSpeed = 20.0f;
+GLfloat cameraSpeed = 10.0f;
 
 GLboolean pressedKeys[1024];
 
@@ -709,7 +709,7 @@ void renderSuperlaser(gps::Shader shader) {
     // 2. Calculate Current Position (The Bullet's location)
     glm::vec3 currentPos = start + (target - start) * beamProgress;
 
-    // 3. LIGHTING (Move the light with the bullet)
+    // 3. LIGHTING (Move the light with the laser beam)
     glUniform3fv(glGetUniformLocation(shader.shaderProgram, "pointLightPos"), 1, glm::value_ptr(currentPos));
 
     // Green Light
@@ -721,7 +721,7 @@ void renderSuperlaser(gps::Shader shader) {
     }
     glUniform3fv(glGetUniformLocation(shader.shaderProgram, "pointLightColor"), 1, glm::value_ptr(greenColor));
 
-    // 4. DRAW THE BULLET
+    // 4. Draw the Projectile
     if (beamProgress > 0.01f && beamProgress < 1.0f) {
 
         glm::mat4 modelBeam = glm::mat4(1.0f);
@@ -749,7 +749,6 @@ void renderSuperlaser(gps::Shader shader) {
         glm::mat3 normalMatrixBeam = glm::mat3(glm::inverseTranspose(view * modelBeam));
         glUniformMatrix3fv(normalMatrixLoc, 1, GL_FALSE, glm::value_ptr(normalMatrixBeam));
 
-        // Reset tiling so the texture maps simply onto the bullet
         glUniform1f(glGetUniformLocation(shader.shaderProgram, "tilingFactor"), 1.0f);
 
         laserBeam.Draw(shader);
