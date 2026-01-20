@@ -38,7 +38,7 @@ float shininess = 32.0f;
 
 float computeFog()
 {
-    float fogDensity = 0.05f;
+    float fogDensity = 0.005f;
     float fragmentDistance = length(fPosEye);
     
     float fogFactor = exp(-pow(fragmentDistance * fogDensity, 2));
