@@ -297,7 +297,7 @@ Deși logica jocului este procedurală (în main.cpp), s-au folosit clase wrappe
 
 # 5. Prezentarea interfeței grafice utilizator / Manual de utilizare
 
-Interfața este vizuală, controlul realizându-se prin tastatură și mouse. Nu există meniuri 2D suprapuse (HUD), imersiunea fiind prioritară.
+Interfața este vizuală, controlul realizându-se prin tastatură și mouse. Nu există meniuri 2D suprapuse (HUD).
 Controale:
 -	W, A, S, D: Deplasare cameră (Înainte, Stânga, Înapoi, Dreapta).
 - Mouse: Orientare privire.
