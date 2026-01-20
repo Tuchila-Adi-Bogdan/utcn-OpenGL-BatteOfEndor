@@ -21,26 +21,23 @@
   </p>
 </div>
 
-
-
-<!-- TABLE OF CONTENTS -->
 ## 1. Cuprins
-  
-1. Cuprins
-2. Prezentarea temei
-3. Scenariul
-   1. Descrierea scenei și a obiectelor
-   2. Funcționalități
-4. Detalii de implementare
-   1. Funcții și algoritmi
-      1. Soluții posibile
-      2. Motivarea abordării alese
-   2. Modelul grafic
-   3. Structuri de date
-   4. Ierarhia de clase
-5. Prezentarea interfeței grafice utilizator / manual de utilizare
-6. Concluzii și dezvoltări ulterioare
-7. Referințe
+
+1. [Cuprins](#1-cuprins)
+2. [Prezentarea temei](#2-prezentarea-temei)
+3. [Scenariul](#3-scenariul)
+   1. [Descrierea scenei și a obiectelor](#31-descrierea-scenei-și-a-obiectelor)
+   2. [Funcționalități](#32-funcționalități)
+4. [Detalii de implementare](#4-detalii-de-implementare)
+   1. [Funcții și algoritmi](#41-funcții-și-algoritmi)
+      1. [Soluții posibile](#411-soluții-posibile)
+      2. [Motivarea abordării alese](#412-motivarea-abordării-alese)
+   2. [Modelul grafic](#42-modelul-grafic)
+   3. [Structuri de date](#43-structuri-de-date)
+   4. [Ierarhia de clase](#44-ierarhia-de-clase)
+5. [Prezentarea interfeței grafice utilizator / Manual de utilizare](#5-prezentarea-interfeței-grafice-utilizator--manual-de-utilizare)
+6. [Concluzii și dezvoltări ulterioare](#6-concluzii-și-dezvoltări-ulterioare)
+7. [Referințe](#7-referințe)
    
 <!-- ABOUT THE PROJECT -->
 ## 2. Prezentarea temei
@@ -77,48 +74,157 @@ Aplicația permite:
 -	Manipularea timpului: Acțiunile se desfășoară doar cât timp tasta SPACE este apăsată, permițând vizualizarea detaliată a traiectoriilor laserelor și a detaliilor.
 
 ## 4. Detalii de implementare
-
+## 4.1. Funcții și Algoritmi
+Ca și regulă, folosesc funcția processMovement() , pentru toată mișcarea. În această funcție verific dacă space bar este apăsat. Dacă da, se actualizează mai multe variabile care reprezintă poziția pentru mai multe obiecte din scenă. Odată ce s-a actualizat poziția, obiectele sunt translatate cu diferite viteze, așa are loc mișcarea.
 #### 4.1.1 Soluții posibile
-1. Algoritmul de mișcare a navelor
-  - Pentru navele mici, s-a implementat un algoritm bazat pe Mașini de Stări Finite (FSM - Finite State Machine). 
-	  - Fiecare navă are o stare curentă (APPROACHING, EVASIVE_TURN, EVASIVE_RUN, STABILIZE, RETURNING, RESET_TURN).
-	  - Tranzițiile între stări se fac pe bază de cronometru (stateTimer) sau poziție (atingerea unei linii imaginare).
-      <!-- <img src="docs/StateDiagramPG.png" alt="StateDiagram"> -->
-	  - La fiecare cadru, în funcție de stare, se actualizează poziția și rotația (Euler Angles).
-		```
-		// Random Jitter
-		float rPitch = ((rand() % 1000) / 1000.0f - 0.5f) * 2.0f;
-		float rYaw = ((rand() % 1000) / 1000.0f - 0.5f) * 2.0f;
-		float rRoll = ((rand() % 1000) / 1000.0f - 0.5f) * 2.0f;
-		ship.rotation.x += rPitch * deltaTime * 2.5f;
-		ship.rotation.y += rYaw * deltaTime * 2.5f;
-		ship.rotation.z += rRoll * deltaTime * 4.0f;
-		```
-		
-		```
-		// Move forward based on nose (of the ship) direction 
-		glm::vec3 forward;
-		forward.x = sin(ship.rotation.y) * cos(ship.rotation.x);
-		forward.y = -sin(ship.rotation.x);
-		forward.z = cos(ship.rotation.y) * cos(ship.rotation.x);
-		forward = glm::normalize(forward);
-		ship.position += forward * (ship.speed * 60.0f * deltaTime);
-		```
-      
-      
-  - Pentru navele mari așa are loc mișcarea:
-  ```
-  ImperialFleetPosition.z += capitalShipSpeed;
-  ```
+Aici am prezentat pe scurt algoritmii mai interesanți din proiect.
+### 1. Algoritmul de mișcare a navelor
+- Pentru navele mari, așa are loc mișcarea:
 	- ImperialFleetPosition se actualizează când e ținut apăsat space bar.
-  ```
-  isdModel = glm::translate(isdModel, ImperialFleetPosition + isdOffsets[i]);
-  ```
 	- Adaugăm idsOffsets ca să își păstreze formația
-
+	  ```cpp
+	  ImperialFleetPosition.z += capitalShipSpeed; //în if (pressedKeys[GLFW_KEY_SPACE])
+	  ```
+	  ```cpp
+	  isdModel = glm::translate(isdModel, ImperialFleetPosition + isdOffsets[i]);
+	  ```
+- Pentru navele mici, s-a implementat un algoritm bazat pe Mașini de Stări Finite (FSM - Finite State Machine).
+	- Fiecare navă are o stare curentă (APPROACHING, EVASIVE_TURN, EVASIVE_RUN, STABILIZE, RETURNING, RESET_TURN).
+	- Tranzițiile între stări se fac pe bază de cronometru (stateTimer) sau poziție (atingerea unei linii imaginare, care e defapt coordonata pe Z a unei anumite flote).
+    - La fiecare cadru, în funcție de stare, se actualizează poziția și rotația (Euler Angles).
+	<img src="docs/StateDiagramPG.png" alt="Logo">
+	</br>
+1. Starea APPROACHING
+- Logica pentru "Random Jitter" - mișcarea arată mult mai naturală
+	```cpp
+	float rPitch = ((rand() % 1000) / 1000.0f - 0.5f) * 2.0f;
+	float rYaw = ((rand() % 1000) / 1000.0f - 0.5f) * 2.0f;
+	float rRoll = ((rand() % 1000) / 1000.0f - 0.5f) * 2.0f;
+	ship.rotation.x += rPitch * deltaTime * 2.5f;
+	ship.rotation.y += rYaw * deltaTime * 2.5f;
+	ship.rotation.z += rRoll * deltaTime * 4.0f;
+	```
+- Logica ca să ma asigur că mișcarea navei este în direcția "nose of the ship" - Face mișcarea mai naturală.
+	```cpp
+	glm::vec3 forward;
+	forward.x = sin(ship.rotation.y) * cos(ship.rotation.x);
+	forward.y = -sin(ship.rotation.x);
+	forward.z = cos(ship.rotation.y) * cos(ship.rotation.x);
+	forward = glm::normalize(forward);
+	ship.position += forward * (ship.speed * 60.0f * deltaTime);
+	```
+- Tranziția spre următoarea stare : Verifică dacă a ajuns la navele Empire
+	```cpp
+	if (canDoManeuver && ship.position.z < empireLine)
+		ship.state = EVASIVE_TURN;
+	```
+2. Starea EVASIVE_TURN : Rotire 180 cu "drift" pentru ca mișcarea să arate mai natural
+	```cpp
+	// Pentru notația cu unghiuri Euler, defapt rotim "yaw" cu PI (180 grade)
+	ship.rotation.y += 3.14159f * deltaTime; // 1 second turn
+	ship.position.z -= 10.0f * deltaTime;    // Momentum drift
+	```
+3. Starea EVASIVE_RUN : Aici navele fac un fel de "swarm" în jurul navelor Empire, pentru a simula un atac. La bază este doar o mișcare random scurtă, cu o viteză mai mare.
+ 	```cpp
+   ship.position.z += (ship.speed * 80.0f) * deltaTime; // Zboară spre +Z
+	// Jitter
+	ship.rotation.x += sin(glfwGetTime() * 15.0f) * 3.0f * deltaTime;
+	ship.rotation.z += cos(glfwGetTime() * 10.0f) * 3.0f * deltaTime;
+	```
+4. Starea STABILIZE : Încerc să stabilizez navele pentru zborul înapoi spre flota Rebelă, dar în practică nu funcționează așa bine. Este totuși necesară pentru că forțez navele să zboare în direcția "nose of the ship" (pentru ca mișcarea să fie naturală) - deci navele trebuie orientate puțin
+   ```cpp
+   float lerpSpeed = 2.0f * deltaTime;
+	ship.rotation.x = ship.rotation.x * (1.0f - lerpSpeed);
+	ship.rotation.z = ship.rotation.z * (1.0f - lerpSpeed);
+	ship.position.z += (ship.speed * 80.0f) * deltaTime;
+   ```
+5. Starea RETURNING : Mișcare spre +Z, întoarcere la flota rebelă. La fel ca și APPROACHING, dar direcție inversă.
+6. Starea RESET_TURN : La fel ca și EVASIVE_TURN, dar în plus resetez orientarea navelor.
+### 2. Super-laser (proiectilul death star): Am folosit un model bazat pe interpolare liniară (LERP). Poziția laserului este determinată de variabila beamProgress (0.0 la 1.0).
+Ca și origine este dsDishPos, ca și target folosim locația cruiserului. Când are loc mișcare, beamProgress crește.
+- Pozitia curentă:
+```cpp
+// în renderSuperlaser
+glm::vec3 currentPos = start + (target - start) * beamProgress;
+```
+```cpp
+//Var. globală
+float beamProgress = 0.0f; // 0.0 = Death Star, 1.0 = Cruiser
+```
+- Pentru traiectoria laserului :
+```cpp
+// în renderSuperlaser
+glm::vec3 start = dsDishPos;
+glm::vec3 target = cruiserFleetPosition;
+```
+- Se întămplă doar când are loc mișcare (este ținut apăsat space bar):
+```cpp
+// în processMovement
+if (!hasHit) {
+    beamProgress += 0.3f * deltaTime;
+    if (beamProgress >= 1.0f) {
+        beamProgress = 1.0f;
+        hasHit = true;
+    }
+}
+```
+- Desenarea proiectilului
+```cpp
+// în renderSuperlaser
+if (beamProgress > 0.01f && beamProgress < 1.0f) {
+    glm::mat4 modelBeam = glm::mat4(1.0f);
+    // Translație la poziția curentă
+    modelBeam = glm::translate(modelBeam, currentPos);
+```
+-Iluminare : Laserul este o sursă de lumină dinamică (Point Light) care se mișcă odată cu geometria.
+```cpp
+// în renderSuperlaser
+glUniform3fv(glGetUniformLocation(shader.shaderProgram, "pointLightPos"), 1, glm::value_ptr(currentPos));
+glm::vec3 greenColor = glm::vec3(0.0f, 5.0f, 0.0f);
+```
+-Mai au loc câteva rotații în renderSuperlaser pentru orientarea corectă a modelului.
+### 3. Laserele mici - trase de navele empire (Imperial Star Destroyers) și interceptoarele rebele (x-wings și a-wings): De asemenea un model bazat pe interpolare liniară.
+- Sunt controlate de funcțiile fireRebelVolley() și fireISDLaser() - unde stabilim startpos, progress, target - fiecare laser este un struct
+- De asemenea am funcțiile renderRebelLasers() și renderISDLaser(), foarte similare, diferă doar poziția de start, target-ul, culoarea și mărimea acestora.
+- Target-ul este ales mereu random
+```cpp
+// în renderRebelLasers
+for (const auto& laser : rebelLasers) // Pentru fiecare laser
+```  
+```cpp
+// în renderRebelLasers
+// Calculate Target Position: Fleet Pos + ISD Offset
+// offset (0, 10, 50) to hit the hull, not the center pivot
+glm::vec3 target = ImperialFleetPosition + isdOffsets[laser.targetISDIndex] + glm::vec3(0.0f, 10.0f, 50.0f);
+glm::vec3 currentPos = start + (target - start) * laser.progress; // Similar cu logica pentru laserul Death Star
+```
+```cpp
+// în renderRebelLasers
+// RED LIGHT
+glUniform3fv(glGetUniformLocation(shader.shaderProgram, "pointLightPos"), 1, glm::value_ptr(currentPos));
+glm::vec3 redColor = glm::vec3(5.0f, 0.0f, 0.0f); // Bright Red
+glUniform3fv(glGetUniformLocation(shader.shaderProgram, "pointLightColor"), 1, glm::value_ptr(redColor));
+```
+```cpp
+// în renderRebelLasers
+// RENDER BEAM
+glm::mat4 modelBeam = glm::mat4(1.0f);
+modelBeam = glm::translate(modelBeam, currentPos);
+```
+```cpp
+// în renderRebelLasers
+// Orientation
+if (glm::length(target - start) > 0.1f) {
+    glm::mat4 rotation = glm::inverse(glm::lookAt(currentPos, start, glm::vec3(0, 1, 0)));
+    rotation[3] = glm::vec4(0, 0, 0, 1);
+    modelBeam = modelBeam * rotation;
+}
+```  
 #### 4.1.2 Motivarea abordării alese
-S-a ales abordarea Procedurală cu State Machine 
-Motiv: Mașina de stări permite un comportament "organic" al flotei (navele par să reacționeze), menținând codul eficient și ușor de extins (se pot adăuga ușor noi stări).
+ - Sistemul de mișcare este bazat pe FSM (Finite State Machine).
+ 	- Motiv: Această arhitectură oferă scalabilitate și modularitate. Permite gestionarea unui număr mare de entități simultan cu un cost computațional redus, generând un comportament organic care ar fi fost dificil și ineficient de implementat prin animație statică (keyframe).
+ - Modelul laserelor este bazat pe Interpolare Liniară (LERP): Traiectoria proiectilelor este calculată folosind un factor de progres (0.0 - 1.0), actualizat în funcție de deltaTime
+ 	- Motiv: Această metodă maximizează eficiența. Elimină necesitatea unor calcule fizice complexe (precum integrarea numerică a accelerației) pentru obiecte care nu își schimbă traiectoria, garantând în același timp precizia impactului și o sincronizare perfectă între logică și randare.
 
 ### 4.2 Modelul grafic
 Aplicația folosește OpenGL 3.3 Core Profile.
@@ -127,11 +233,35 @@ Aplicația folosește OpenGL 3.3 Core Profile.
     - Lumină direcțională (de la steaua cea mai apropriata).
     - Lumini punctiforme (Point Lights) dinamice atașate de vârful laserelor și de centrul exploziilor. Acestea apar și dispar în funcție de logica simulării.
 - Texturare: Modelele 3D au coordonate UV și texturi difuze mapate.
-
+## Fragment shader:
+În fragment shader calculez ambientTotal, diffuseTotal, specularTotal.
+ - ambientTotal = ambientDir + ambientPoint
+ - diffuseTotal = diffuseDir + diffusePoint
+ - specularTotal = specularDir + specularPoint
+```cpp
+//pentru texturi transparente
+    if(texColor.x == 0)
+        discard;
+```
+```cpp
+// Lumini directionale
+    computeDirLight(fPosEye, normalEye, viewDir, texDiffuse, texSpecular);
+```
+```cpp
+// Lumini punctiforme (de la lasere)
+    // Calculam lumina punctiforma doar daca are culoare (optimizare)
+    if (length(pointLightColor) > 0.0) {
+        computePointLight(fPosEye, normalEye, viewDir, texDiffuse, texSpecular);
+    }
+```
+```cpp
+// Combinare finală
+vec3 finalColor = min(ambientTotal + diffuseTotal + specularTotal, 1.0f);
+```
 ### 4.3 Structuri de date
 Pentru gestionarea eficientă a obiectelor, s-au folosit structuri C++ și containere STL:
 - struct Ship: Stochează poziția (glm::vec3), rotația, viteza și starea curentă a fiecărei nave de luptă.
-```
+```cpp
 struct Ship {
     glm::vec3 position; // World Position
     glm::vec3 rotation; // Euler Angles: x=Pitch, y=Yaw, z=Roll
@@ -141,7 +271,7 @@ struct Ship {
 };
 ```
 - struct LaserShot / RebelLaserShot: Reține starea activă, progresul (0.0 - 1.0), poziția de start și un pointer către nava țintă (Ship* targetShip). Aceasta permite laserului să urmărească ținta chiar dacă nava se mișcă.
-```
+```cpp
 struct LaserShot {
     bool active = false;
     float progress = 0.0f;      // 0.0 = Start, 1.0 = Target
@@ -149,7 +279,7 @@ struct LaserShot {
     Ship* targetShip = nullptr; // Target
 };
 ```
-```
+```cpp
 struct RebelLaserShot {
     bool active = false;
     float progress = 0.0f;
